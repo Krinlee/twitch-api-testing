@@ -8,7 +8,7 @@ dServer = os.getenv('DISCORD_SERVER')
 lChan = os.getenv('GOING_LIVE')
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix='-', intensts=intents)
+bot = commands.Bot(command_prefix='-', intents=intents)
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 

@@ -10,13 +10,14 @@ lChan = os.getenv('GOING_LIVE')
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='-', intents=intents)
 
+load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 # Authentication with Twitch API
 client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
 twitch = Twitch(client_id, client_secret)
-twitch.authenticate_app([])
+# twitch.authenticate_app([])
 TWITCH_STREAM_API_ENDPOINT_V5 = "https://api.twitch.tv/kraken/streams/{}"
 API_HEADERS = {
 	'Client_ID': client_id,
@@ -45,28 +46,36 @@ def checkuser(user):
 # Execute when bot is started
 @bot.event
 async def on_ready():
-	@tasks.loop(seconds=10)
-	async def live_notifs_loop():
-		with open('streamers.json', 'r') as file:
-			streamers = json.loads(file.read())
-		if streamers is not None:
-			guild = bot.get_guild(dServer)
-			channel = bot.get_channel(lChan)
-			role = get(guild.roles, id=1057725396096917555)
-			for user_id, twitch_name in streamers.items():
-				status = checkuser(twitch_name)
-				user = bot.get_user(int(user_id))
-				if status is True:
-					async for message in channel.history(limit=200):
-						if str(user.mention) in message.content and "is not streaming" in message.content:
-							break
-						else:
-							async for member in guild.fetch_members(limit=None):
-								if member.id == int(user_id):
-									await member.add_roles(role)
-							async for message in channel.history(limit=200):
-								if str(user.mention) in message.content and "is now streaming" in message.content:
-									await message.delete()
+	live_notifs_loop.start()
+
+@tasks.loop(seconds=10)
+async def live_notifs_loop():
+	with open('streamers.json', 'r') as file:
+		streamers = json.loads(file.read())
+	if streamers is not None:
+		guild = bot.get_guild(dServer)
+		channel = bot.get_channel(lChan)
+		role = get(guild.roles, id=1057725396096917555)
+		for user_id, twitch_name in streamers.items():
+			status = checkuser(twitch_name)
+			user = bot.get_user(int(user_id))
+			if status is True:
+				async for message in channel.history(limit=200):
+					if str(user.mention) in message.content and "is not streaming" in message.content:
+						break
+					else:
+						async for member in guild.fetch_members(limit=None):
+							if member.id == int(user_id):
+								await member.add_roles(role)
+				await channel.send(
+					f":red_circle: **LIVE**\n{user.mention} is now streaming on Twitch!"
+					f"\nhttps://www.twitch.tv/{twitch_name}")
+				print(f"{user} started streaming. Sending a notification.")
+				break
+	else:
+		async for message in channel.history(limit=200):
+			if str(user.mention) in message.content and "is now streaming" in message.content:
+				await message.delete()
 
 
 @bot.command(name='addtwitch', help='Adds your Twitch to the live notifs.', pass_context=True)

@@ -26,7 +26,7 @@ API_HEADERS = {
 # Returns true if online, false if not.
 def checkuser(user):
 	try:
-		userid = twitch.et_users(logins=[user])['data'][0]['id']
+		userid = twitch.get_users(logins=[user])['data'][0]['id']
 		url = TWITCH_STREAM_API_ENDPOINT_V5.format(userid)
 		try:
 			req = requests.Session().get(url, headers=API_HEADERS)

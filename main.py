@@ -18,7 +18,7 @@ client_id = os.getenv('CLIENT_ID')
 client_secret = os.getenv('CLIENT_SECRET')
 twitch = Twitch(client_id, client_secret)
 # twitch.authenticate_app([])
-TWITCH_STREAM_API_ENDPOINT_V5 = "https://api.twitch.tv/kraken/streams/{}"
+TWITCH_STREAM_API_ENDPOINT_V5 = "https://api.twitch.tv/helix/streams"
 API_HEADERS = {
 	'Client_ID': client_id,
 	'Accept': 'application/vnd.twitchtv.v5=json',
